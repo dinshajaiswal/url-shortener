@@ -3,6 +3,7 @@ package com.url_shortener.demo.service;
 import com.url_shortener.demo.entity.UrlMapping;
 import com.url_shortener.demo.exception.InvalidUrlException;
 import com.url_shortener.demo.exception.ShortCodeNotFoundException;
+import com.url_shortener.demo.utils.Base62Encoder;
 import org.springframework.stereotype.Service;
 import com.url_shortener.demo.repository.UrlRepository;
 
@@ -12,18 +13,22 @@ import java.util.UUID;
 @Service
 public class UrlService {
     private final UrlRepository urlRepository;
-    public UrlService(UrlRepository urlRepository){
+    private final Base62Encoder base62Encoder;
+
+    public UrlService(UrlRepository urlRepository, Base62Encoder base62Encoder){
         this.urlRepository = urlRepository;
+        this.base62Encoder = base62Encoder;
     }
     public String createShortUrl(String longUrl){
         if(!isValidUrl(longUrl)) throw new InvalidUrlException("Invalid URL");
-        String shortCode ;
-        do{
-            shortCode = generateShortCode();
-        } while(urlRepository.existsByShortCode(shortCode));
 
-        UrlMapping urlMapping = new UrlMapping(shortCode, longUrl, LocalDateTime.now());
+        UrlMapping urlMapping = new UrlMapping(null, longUrl, LocalDateTime.now());
+        urlMapping = urlRepository.save(urlMapping);
+
+        String shortCode = base62Encoder.encode(urlMapping.getId());
+        urlMapping.setShortCode(shortCode);
         urlRepository.save(urlMapping);
+
         return shortCode;
     }
 

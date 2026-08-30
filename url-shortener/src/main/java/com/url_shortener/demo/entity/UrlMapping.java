@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -15,7 +16,8 @@ public class UrlMapping {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name="short_code", nullable=false, unique=true)
+    @Setter
+    @Column(name="short_code", unique=true)
     private String shortCode;
 
     @Column(name="original_url", nullable=false, length=2048)
@@ -31,4 +33,5 @@ public class UrlMapping {
         this.originalUrl = originalUrl;
         this.createdAt = createdAt;
     }
+
 }
