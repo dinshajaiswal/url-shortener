@@ -1,10 +1,12 @@
 package com.url_shortener.demo.service;
 
+import com.url_shortener.demo.entity.UrlMapping;
 import com.url_shortener.demo.exception.InvalidUrlException;
 import com.url_shortener.demo.exception.ShortCodeNotFoundException;
 import org.springframework.stereotype.Service;
 import com.url_shortener.demo.repository.UrlRepository;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -15,26 +17,25 @@ public class UrlService {
     }
     public String createShortUrl(String longUrl){
         if(!isValidUrl(longUrl)) throw new InvalidUrlException("Invalid URL");
-        String shortUrl ;
+        String shortCode ;
         do{
-            shortUrl = generateShortCode();
-        } while(urlRepository.isExist(shortUrl));
+            shortCode = generateShortCode();
+        } while(urlRepository.existsByShortCode(shortCode));
 
-        urlRepository.save(shortUrl, longUrl);
-        return shortUrl;
+        UrlMapping urlMapping = new UrlMapping(shortCode, longUrl, LocalDateTime.now());
+        urlRepository.save(urlMapping);
+        return shortCode;
     }
+
     private String generateShortCode(){
         return UUID.randomUUID().toString().substring(0,6);
     }
 
     public String getOriginalUrl(String shortCode) {
-        String original = urlRepository.getOriUrl(shortCode);
-        if(original == null){
-            throw new ShortCodeNotFoundException(
-                    "Short URL not found"
-            );
-        }
-        return original;
+        UrlMapping urlMapping = urlRepository.findByShortCode(shortCode)
+                .orElseThrow(()-> new ShortCodeNotFoundException("Short URL not found"));
+
+        return urlMapping.getOriginalUrl();
     }
 
     public boolean isValidUrl(String url){
