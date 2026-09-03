@@ -26,12 +26,16 @@ public class UrlMapping {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt;
+
     public UrlMapping() {
     }
-    public UrlMapping(String shortCode, String originalUrl, LocalDateTime createdAt) {
+    public UrlMapping(String shortCode, String originalUrl, LocalDateTime createdAt, LocalDateTime expiresAt) {
         this.shortCode = shortCode;
         this.originalUrl = originalUrl;
         this.createdAt = createdAt;
+        this.expiresAt = expiresAt;
     }
 
 }

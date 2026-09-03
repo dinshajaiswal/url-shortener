@@ -19,10 +19,10 @@ public class UrlService {
         this.urlRepository = urlRepository;
         this.base62Encoder = base62Encoder;
     }
-    public String createShortUrl(String longUrl){
+    public String createShortUrl(String longUrl, LocalDateTime expiresAt){
         if(!isValidUrl(longUrl)) throw new InvalidUrlException("Invalid URL");
 
-        UrlMapping urlMapping = new UrlMapping(null, longUrl, LocalDateTime.now());
+        UrlMapping urlMapping = new UrlMapping(null, longUrl, LocalDateTime.now(), expiresAt);
         urlMapping = urlRepository.save(urlMapping);
 
         String shortCode = base62Encoder.encode(urlMapping.getId());
@@ -40,6 +40,9 @@ public class UrlService {
         UrlMapping urlMapping = urlRepository.findByShortCode(shortCode)
                 .orElseThrow(()-> new ShortCodeNotFoundException("Short URL not found"));
 
+        if(urlMapping.getExpiresAt() != null && urlMapping.getExpiresAt().isBefore(LocalDateTime.now())){
+            throw new ShortCodeNotFoundException("Short code has expired!");
+        }
         return urlMapping.getOriginalUrl();
     }
 

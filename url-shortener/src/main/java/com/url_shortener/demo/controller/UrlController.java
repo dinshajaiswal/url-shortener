@@ -14,7 +14,7 @@ public class UrlController {
     }
     @PostMapping("/api/v1/urls")
     public ResponseEntity<CreateUrlResponse> createShortUrl(@RequestBody CreateUrlRequest request){
-        String shortCode = urlService.createShortUrl(request.getUrl());
+        String shortCode = urlService.createShortUrl(request.getUrl(), request.getExpiresAt());
         String shortUrl = "http://localhost:8080/" + shortCode;
         CreateUrlResponse response = new CreateUrlResponse(shortCode, shortUrl);
         return ResponseEntity.ok(response);
