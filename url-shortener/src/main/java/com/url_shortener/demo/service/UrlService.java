@@ -14,10 +14,12 @@ import java.util.UUID;
 public class UrlService {
     private final UrlRepository urlRepository;
     private final Base62Encoder base62Encoder;
+    private final RedisService redisService;
 
-    public UrlService(UrlRepository urlRepository, Base62Encoder base62Encoder){
+    public UrlService(UrlRepository urlRepository, Base62Encoder base62Encoder, RedisService redisService){
         this.urlRepository = urlRepository;
         this.base62Encoder = base62Encoder;
+        this.redisService = redisService;
     }
     public String createShortUrl(String longUrl, LocalDateTime expiresAt){
         if(!isValidUrl(longUrl)) throw new InvalidUrlException("Invalid URL");
@@ -37,13 +39,22 @@ public class UrlService {
     }
 
     public String getOriginalUrl(String shortCode) {
+        String key = "url:" + shortCode;
+
+        String cachedUrl = redisService.get(key);
+        if(cachedUrl != null) return cachedUrl;
+
         UrlMapping urlMapping = urlRepository.findByShortCode(shortCode)
                 .orElseThrow(()-> new ShortCodeNotFoundException("Short URL not found"));
 
         if(urlMapping.getExpiresAt() != null && urlMapping.getExpiresAt().isBefore(LocalDateTime.now())){
             throw new ShortCodeNotFoundException("Short code has expired!");
         }
-        return urlMapping.getOriginalUrl();
+        String originalUrl = urlMapping.getOriginalUrl();
+
+        redisService.set(key, originalUrl, 3600);
+
+        return originalUrl;
     }
 
     public boolean isValidUrl(String url){
