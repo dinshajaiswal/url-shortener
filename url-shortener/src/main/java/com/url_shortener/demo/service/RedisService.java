@@ -20,6 +20,12 @@ public class RedisService {
     public void delete(String key){
         redisTemplate.delete(key);
     }
+    public long increment(String key) {
+        return redisTemplate.opsForValue().increment(key);
+    }
+    public void expire(String key, long seconds){
+        redisTemplate.expire(key, Duration.ofSeconds(seconds));
+    }
     public boolean testConnection() {
 
         set("test-key", "hello-redis", 60);

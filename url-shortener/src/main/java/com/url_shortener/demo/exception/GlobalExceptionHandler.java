@@ -31,4 +31,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(response);
     }
+
+    @ExceptionHandler(ExpiredUrlException.class)
+    public ResponseEntity<String> handleExpiredUrl(ExpiredUrlException ex){
+        return ResponseEntity.status(HttpStatus.GONE).body(ex.getMessage());
+    }
 }
